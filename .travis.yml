@@ -1,0 +1,11 @@
+name: Scratchip CI
+language: python
+script:
+  - python setup.py bdist_wheel
+deploy:
+  provider: pypi
+  username: $PYPI_NAME
+  password: $PYPI_PW
+  skip_cleanup: true
+  on:
+    tags: true

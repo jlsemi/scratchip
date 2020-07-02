@@ -1,0 +1,11 @@
+---
+hierarchy:
+  Makefile: assets/project.mk
+  doc: ''
+  hw:
+    chisel:
+      build.sc: assets/build.sc
+      Makefile: assets/chisel.mk
+      src:
+        Demo.scala: assets/Demo.scala
+    rtl: ''
