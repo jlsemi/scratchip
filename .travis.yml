@@ -7,11 +7,11 @@ before_deploy:
   - echo "deploying $FILE to GitHub releases"
 deploy:
   - provider: releases
-     api_key: $GITHUB_TOKEN
-     file: $FILE
-     skip_cleanup: true
-     on:
-       tags: true
+    api_key: $GITHUB_TOKEN
+    file: $FILE
+    skip_cleanup: true
+    on:
+      tags: true
   - provider: pypi
     username: $PYPI_NAME
     password: $PYPI_PW
