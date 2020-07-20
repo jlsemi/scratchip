@@ -1,5 +1,5 @@
 ---
-name: ":rocket: Feature request"
+name: "🚀 Feature request"
 about: Suggest an idea for improving Scratchip
 title: ''
 labels: 'type:Enhancement'
