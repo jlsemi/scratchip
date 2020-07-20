@@ -33,20 +33,17 @@ class ScratChip:
     scratchip_path = 'builds/scratchip'
     cfg = None
 
-    def __init__(self, args):
-        self.prj_name = args.prj_name
+    def __init__(self, prj_name, cfg):
+        self.prj_name = prj_name
         self.prj_path = os.path.abspath(self.prj_name)
-        cfg = args.config
-        if isinstance(args.config, list):
-            cfg = args.config[0]
         with open(cfg) as file:
             if sys.version_info.major == 3 and sys.version_info.minor > 6:
                 self.cfg = yaml.load(file, Loader=yaml.FullLoader)
             else:
                 self.cfg = yaml.load(file)
 
-    def create(self, args):
-        self.top_name = args.top
+    def create(self, top):
+        self.top_name = top
         if self.prj_name != '.':
             os.mkdir(self.prj_name)
 
@@ -63,7 +60,7 @@ class ScratChip:
         shutil.copyfile(mill_bin.source, mill_path)
         shutil.copyfile(chisel3_jar.source, os.path.join(jars_path, 'chisel3.jar'))
 
-    def dump_default_cfg(self, args):
+    def dump_default_cfg(self, cfg, dump_name):
        shutil.copyfile(args.config, args.dump_name)
 
     def create_dir(self, path, dir_tree):
@@ -199,17 +196,28 @@ def parse_args():
         return None
 
 def create(args):
-    sc = ScratChip(args)
-    sc.create(args)
+    prj_name = args.prj_name
+    top = args.top
+    cfg = args.config
+    if isinstance(args.config, list):
+        cfg = args.config[0]
+    sc = ScratChip(prj_name, cfg)
+    sc.create(top)
     sc.init()
 
 def init(args):
-    sc = ScratChip(args)
+    prj_name = args.prj_name
+    cfg = args.config
+    if isinstance(args.config, list):
+        cfg = args.config[0]
+    sc = ScratChip(prj_name, cfg)
     sc.init()
 
 def dump_cfg(args):
-    sc = ScratChip(args)
-    sc.dump_default_cfg(args)
+    cfg = get_resource_name("assets/default.yaml")
+    dump_name = args.dump_name
+    sc = ScratChip('.', cfg, dump_name)
+    sc.dump_default_cfg()
 
 def main():
     args = parse_args()
