@@ -53,12 +53,18 @@ class ScratChip:
 
     def init(self):
         cache_path = os.path.join(self.prj_path, self.scratchip_path)
-        self.extract_cache(mill_cache.source, cache_path)
         mill_path = os.path.join(self.prj_path, self.scratchip_path + '/mill')
         jars_path = os.path.join(self.prj_path, self.scratchip_path + '/jars')
-        os.makedirs(jars_path)
-        shutil.copyfile(mill_bin.source, mill_path)
-        shutil.copyfile(chisel3_jar.source, os.path.join(jars_path, 'chisel3.jar'))
+        chisel3_jar_path = os.path.join(jars_path, 'chisel3.jar')
+
+        if not os.path.exists(cache_path):
+            self.extract_cache(mill_cache.source, cache_path)
+        if not os.path.exists(mill_path):
+            shutil.copyfile(mill_bin.source, mill_path)
+        if not os.path.exists(jars_path):
+            os.makedirs(jars_path)
+        if not os.path.exists(chisel3_jar_path):
+            shutil.copyfile(chisel3_jar.source, chisel3_jar_path)
 
     def dump_default_cfg(self, cfg, dump_name):
        shutil.copyfile(args.config, args.dump_name)
