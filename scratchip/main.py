@@ -136,6 +136,20 @@ class ScratChip:
         tar.extractall(dest)
         tar.close()
 
+    def read_yaml(self, cfg_path):
+        with open(cfg_path) as file:
+            if sys.version_info.major == 3 and sys.version_info.minor > 6:
+                return yaml.load(file, Loader=yaml.FullLoader)
+            else:
+                return yaml.load(file)
+
+    def gen_filelist(self, cfg_path):
+        cfg = self.read_yaml(cfg_path)
+        res = [os.path.abspath(x) + '\n' for x in (cfg["filelist"]["rtl"])]
+        dest = cfg["filelist"]["dump"]
+        with open(dest, 'w') as f:
+            f.writelines(res)
+
 def parse_args():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
@@ -190,6 +204,14 @@ def parse_args():
         default='config', help='Dump Configure file name ')
     parser_dump_cfg.set_defaults(func=dump_cfg)
 
+    # generate project's files
+    parser_project = subparsers.add_parser(
+        "project", help="Generate Project's files"
+    )
+    parser_project.add_argument(
+        'project_cfg', type=str, nargs='?',
+        default='project.yaml', help='Project configure file path')
+    parser_project.set_defaults(func=gen_project)
 
     args = parser.parse_args()
 
@@ -224,6 +246,14 @@ def dump_cfg(args):
     dump_name = args.dump_name
     sc = ScratChip('.', cfg, dump_name)
     sc.dump_default_cfg()
+
+def gen_project(args):
+    cfg = get_resource_name("assets/default.yaml")
+    prj_cfg = args.project_cfg
+    if isinstance(args.config, list):
+        cfg = args.project_cfg[0]
+    sc = ScratChip('.', cfg)
+    sc.gen_filelist(prj_cfg)
 
 def main():
     args = parse_args()
