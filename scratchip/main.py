@@ -143,12 +143,66 @@ class ScratChip:
             else:
                 return yaml.load(file)
 
+    def gen_filelist_str(self, path_list):
+        res = []
+        for path in path_list:
+            if isinstance(path, dict):
+                k, v = list(path.items())[0]
+                tag = ''
+                if v == 'is_include_file':
+                    tag = '-v'
+                elif v == 'is_include_dir':
+                    tag = '-y'
+                else:
+                    print("Unsupport tag: %s" % v)
+                    sys.exit(-1)
+                res.append("%s %s\n" % (tag, os.path.abspath(k)))
+            else:
+                res.append(os.path.abspath(path) + "\n")
+
+        return res
+
+    def gen_filelist_define(self, defines):
+        res = []
+        for define in defines:
+            if isinstance(define, dict):
+                k, v = list(define.items())[0]
+                res.append("+define+%s=%d\n" % (k, v))
+            else:
+                res.append("+define+%s\n" % define)
+
+        return res
+
     def gen_filelist(self, cfg_path):
         cfg = self.read_yaml(cfg_path)
-        res = [os.path.abspath(x) + '\n' for x in (cfg["filelist"]["rtl"])]
-        dest = cfg["filelist"]["dump"]
-        with open(dest, 'w') as f:
-            f.writelines(res)
+        targets = {}
+        for target, v in cfg["filelist"].items():
+            targets[target] = []
+            if "defines" in v:
+                targets[target] += self.gen_filelist_define(v["defines"])
+            if "files" in v:
+                targets[target] += self.gen_filelist_str(v["files"])
+            if "includes" in v:
+                for inc_path in v["includes"]:
+                    inc_cfg = self.read_yaml(inc_path)
+                    if "defines" in inc_cfg:
+                        targets[target] += self.gen_filelist_define(inc_cfg["defines"])
+                    if "files" in inc_cfg:
+                        targets[target] += self.gen_filelist_str(inc_cfg["files"])
+
+        for target, v in cfg["filelist"].items():
+            if "filesets" in v:
+                for other_target in v["filesets"]:
+                    targets[target] = targets[other_target] + targets[target]
+
+        # res = [os.path.abspath(x) + '\n' for x in (cfg["filelist"]["rtl"])]
+        # dest = cfg["filelist"]["dump"]
+        dest_dir = "builds/filelist"
+        if not os.path.exists(dest_dir):
+            os.mkdir(dest_dir)
+        for target, v in targets.items():
+            with open("%s/%s.f" % (dest_dir, target), 'w') as f:
+                f.writelines(v)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -204,14 +258,14 @@ def parse_args():
         default='config', help='Dump Configure file name ')
     parser_dump_cfg.set_defaults(func=dump_cfg)
 
-    # generate project's files
-    parser_project = subparsers.add_parser(
-        "project", help="Generate Project's files"
+    # generate filelist
+    parser_filelist = subparsers.add_parser(
+        "filelist", help="Generate Project's filelist"
     )
-    parser_project.add_argument(
+    parser_filelist.add_argument(
         'project_cfg', type=str, nargs='?',
-        default='project.yaml', help='Project configure file path')
-    parser_project.set_defaults(func=gen_project)
+        default='project.yml', help='Project configure file path')
+    parser_filelist.set_defaults(func=gen_filelist)
 
     args = parser.parse_args()
 
@@ -247,7 +301,7 @@ def dump_cfg(args):
     sc = ScratChip('.', cfg, dump_name)
     sc.dump_default_cfg()
 
-def gen_project(args):
+def gen_filelist(args):
     cfg = get_resource_name("assets/default.yaml")
     prj_cfg = args.project_cfg
     if isinstance(args.config, list):
