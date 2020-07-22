@@ -173,7 +173,7 @@ class ScratChip:
 
         return res
 
-    def gen_filelist(self, cfg_path):
+    def gen_filelist(self, cfg_path, dest_target):
         cfg = self.read_yaml(cfg_path)
         targets = {}
         for target, v in cfg["filelist"].items():
@@ -195,14 +195,20 @@ class ScratChip:
                 for other_target in v["filesets"]:
                     targets[target] = targets[other_target] + targets[target]
 
-        # res = [os.path.abspath(x) + '\n' for x in (cfg["filelist"]["rtl"])]
-        # dest = cfg["filelist"]["dump"]
         dest_dir = "builds/filelist"
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
-        for target, v in targets.items():
-            with open("%s/%s.f" % (dest_dir, target), 'w') as f:
-                f.writelines(v)
+        if dest_target == "all":
+            for target, v in targets.items():
+                with open("%s/%s.f" % (dest_dir, target), 'w') as f:
+                    f.writelines(v)
+        elif dest_target in targets:
+            with open("%s/%s.f" % (dest_dir, dest_target), 'w') as f:
+                f.writelines(targets[dest_target])
+        else:
+            print("Not found target: %s" % dest_target)
+            print("Available targets: %s" % " ".join(list(targets.keys())))
+            sys.exit(-1)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -265,6 +271,10 @@ def parse_args():
     parser_filelist.add_argument(
         'project_cfg', type=str, nargs='?',
         default='project.yml', help='Project configure file path')
+    parser_filelist.add_argument(
+        '--target', '-t', type=str, nargs='?',
+        default='all', help='filelist target, default is all')
+
     parser_filelist.set_defaults(func=gen_filelist)
 
     args = parser.parse_args()
@@ -304,10 +314,11 @@ def dump_cfg(args):
 def gen_filelist(args):
     cfg = get_resource_name("assets/default.yaml")
     prj_cfg = args.project_cfg
+    target = args.target
     if isinstance(args.config, list):
         cfg = args.project_cfg[0]
     sc = ScratChip('.', cfg)
-    sc.gen_filelist(prj_cfg)
+    sc.gen_filelist(prj_cfg, target)
 
 def main():
     args = parse_args()
