@@ -67,7 +67,7 @@ class ScratChip:
             shutil.copyfile(chisel3_jar.source, chisel3_jar_path)
 
     def dump_default_cfg(self, cfg, dump_name):
-       shutil.copyfile(args.config, args.dump_name)
+       shutil.copyfile(cfg, dump_name)
 
     def create_dir(self, path, dir_tree):
         for (k, v) in dir_tree.items():
@@ -261,7 +261,7 @@ def parse_args():
 
     parser_dump_cfg.add_argument(
         'dump_name', type=str, nargs='?',
-        default='config', help='Dump Configure file name ')
+        default='config.yml', help='Dump Configure file name ')
     parser_dump_cfg.set_defaults(func=dump_cfg)
 
     # generate filelist
@@ -308,8 +308,7 @@ def init(args):
 def dump_cfg(args):
     cfg = get_resource_name("assets/default.yaml")
     dump_name = args.dump_name
-    sc = ScratChip('.', cfg, dump_name)
-    sc.dump_default_cfg()
+    shutil.copyfile(cfg, dump_name)
 
 def gen_filelist(args):
     cfg = get_resource_name("assets/default.yaml")
