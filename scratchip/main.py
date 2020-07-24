@@ -66,6 +66,12 @@ class ScratChip:
         if not os.path.exists(chisel3_jar_path):
             shutil.copyfile(chisel3_jar.source, chisel3_jar_path)
 
+        # create project's YAML template
+        prj_yml_dest = os.path.join(self.prj_path, 'project.yml')
+        if not os.path.exists(prj_yml_dest):
+            prj_yml = get_resource_name("assets/project.yml")
+            shutil.copyfile(prj_yml, prj_yml_dest)
+
     def dump_default_cfg(self, cfg, dump_name):
        shutil.copyfile(cfg, dump_name)
 

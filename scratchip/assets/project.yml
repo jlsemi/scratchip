@@ -1,0 +1,18 @@
+version: 0.2
+# filelist:
+#    target:
+#      filesets: [other_target ...]
+#      defines:
+#        - FOO: 59
+#        - BAR
+#      files:
+#        # Specifies a Verilog library file. vcs option '-v filename'
+#        - path/to/defines.v : is_include_file
+#        # Specifies a Verilog library directory. vcs option '-y directory'
+#        - path/to/subdir : is_include_dir
+#        # Common files
+#        - path/to/verilog.v
+#      # includes other yaml defines filelist
+#      includes:
+#        - cpu.yml
+#        - an.yml

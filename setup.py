@@ -10,6 +10,7 @@ setup(
         "scratchip": [
             "jars/chisel3.jar",
             "assets/default.yaml",
+            "assets/project.yml",
             "assets/build.sc",
             "assets/project.mk",
             "assets/chisel.mk",
