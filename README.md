@@ -11,6 +11,7 @@ If you want to build *scratchip* from scratch, please refer [how to build](doc/h
 Install **scratchip** with following shell command, if you would like to install it to system, use `sudo` and remove `--user`.
 
 ```shell
+# require Python versions: 3.6+
 $ pip3 --user install scratchip
 ```
 
