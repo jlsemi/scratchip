@@ -10,6 +10,7 @@ import yaml
 import chisel3_jar
 import mill_bin
 import mill_cache
+import glob
 
 # Check if this is run from a local installation
 scratchipdir = os.path.abspath(
@@ -155,14 +156,22 @@ class ScratChip:
             if isinstance(path, dict):
                 k, v = list(path.items())[0]
                 tag = ''
-                if v == 'is_include_file':
-                    tag = '-v'
-                elif v == 'is_include_dir':
-                    tag = '-y'
+                if v == "flat_dir":
+                    flat_files = glob.glob(os.path.abspath(k) + "/*.*v")
+                    if not flat_files:
+                        print("Warn: %s is empty" % k)
+                    res.extend([x + "\n" for x in flat_files])
                 else:
-                    print("Unsupport tag: %s" % v)
-                    sys.exit(-1)
-                res.append("%s %s\n" % (tag, os.path.abspath(k)))
+                    if v == 'is_library_file':
+                        tag = '-v '
+                    elif v == 'is_library_dir':
+                        tag = '-y '
+                    elif v == 'is_include_dir':
+                        tag = '+incdir+'
+                    else:
+                        print("Unsupport tag: %s" % v)
+                        sys.exit(-1)
+                    res.append("%s%s\n" % (tag, os.path.abspath(k)))
             else:
                 res.append(os.path.abspath(path) + "\n")
 
