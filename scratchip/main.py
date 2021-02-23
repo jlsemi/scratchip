@@ -280,8 +280,9 @@ def parse_args():
     parser_dump_cfg.set_defaults(func=dump_cfg)
 
     # generate filelist
-    parser_filelist = subparsers.add_parser(
-        "filelist", help="Generate Project's filelist"
+    parser_filelist = subparsers.add_parser("filelist", help="""
+        is_library_file: -v, is_library_dir: -y is_include_dir: +incdir+
+    """
     )
     parser_filelist.add_argument(
         'project_cfg', type=str, nargs='?',
