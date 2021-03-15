@@ -38,9 +38,10 @@ class ScratChip:
         self.prj_name = prj_name
         self.prj_path = os.path.abspath(self.prj_name)
         with open(cfg) as file:
-            if sys.version_info.major == 3 and sys.version_info.minor > 6:
+            if sys.version_info.major == 3 and sys.version_info.minor >= 6:
                 self.cfg = yaml.load(file, Loader=yaml.FullLoader)
             else:
+                print(sys.version_info)
                 self.cfg = yaml.load(file)
 
     def create(self, top):
@@ -145,13 +146,17 @@ class ScratChip:
 
     def read_yaml(self, cfg_path):
         with open(cfg_path) as file:
-            if sys.version_info.major == 3 and sys.version_info.minor > 6:
+            if sys.version_info.major == 3 and sys.version_info.minor >= 6:
                 return yaml.load(file, Loader=yaml.FullLoader)
             else:
                 return yaml.load(file)
 
     def gen_filelist_str(self, path_list):
-        res = []
+        res = {
+            "filelist" : [],
+            "dirs"     : [],
+            "files"    : [],
+        }
         for path in path_list:
             if isinstance(path, dict):
                 k, v = list(path.items())[0]
@@ -160,20 +165,24 @@ class ScratChip:
                     flat_files = glob.glob(os.path.abspath(k) + "/*.*v")
                     if not flat_files:
                         print("Warn: %s is empty" % k)
-                    res.extend([x + "\n" for x in flat_files])
+                    res["filelist"].extend([x + "\n" for x in flat_files])
+                    res["files"].extend([x + "\n" for x in flat_files])
                 else:
                     if v == 'is_library_file':
                         tag = '-v '
+                        res["files"].append("%s" % os.path.abspath(k))
                     elif v == 'is_library_dir':
                         tag = '-y '
+                        res["dirs"].append("%s" % os.path.abspath(k))
                     elif v == 'is_include_dir':
                         tag = '+incdir+'
+                        res["dirs"].append("%s" % os.path.abspath(k))
                     else:
                         print("Unsupport tag: %s" % v)
                         sys.exit(-1)
-                    res.append("%s%s\n" % (tag, os.path.abspath(k)))
+                    res["filelist"].append("%s%s\n" % (tag, os.path.abspath(k)))
             else:
-                res.append(os.path.abspath(path) + "\n")
+                res["filelist"].append(os.path.abspath(path) + "\n")
 
         return res
 
@@ -191,33 +200,49 @@ class ScratChip:
     def gen_filelist(self, cfg_path, dest_target):
         cfg = self.read_yaml(cfg_path)
         targets = {}
+        yaml_targets = {}
         for target, v in cfg["filelist"].items():
             targets[target] = []
+            yaml_targets[target] = {
+                "dirs"  : [],
+                "files" : [],
+            }
             if "defines" in v:
                 targets[target] += self.gen_filelist_define(v["defines"])
             if "files" in v:
-                targets[target] += self.gen_filelist_str(v["files"])
+                res = self.gen_filelist_str(v["files"])
+                yaml_targets[target]["files"] += res["files"]
+                yaml_targets[target]["dirs" ] += res["dirs" ]
+                targets[target] += res["filelist"]
             if "includes" in v:
                 for inc_path in v["includes"]:
                     inc_cfg = self.read_yaml(inc_path)
                     if "defines" in inc_cfg:
                         targets[target] += self.gen_filelist_define(inc_cfg["defines"])
                     if "files" in inc_cfg:
-                        targets[target] += self.gen_filelist_str(inc_cfg["files"])
+                        res =  self.gen_filelist_str(inc_cfg["files"])
+                        yaml_targets[target]["files"] += res["files"]
+                        yaml_targets[target]["dirs" ] += res["dirs" ]
+                        targets[target] += res["filelist"]
 
         for target, v in cfg["filelist"].items():
             if "filesets" in v:
                 for other_target in v["filesets"]:
                     targets[target] = targets[other_target] + targets[target]
+                    yaml_targets[target] = yaml_targets[other_target] + yaml_targets[target]
 
         dest_dir = "builds/filelist"
         if not os.path.exists(dest_dir):
             os.mkdir(dest_dir)
         if dest_target == "all":
             for target, v in targets.items():
+                with open("%s/%s.yaml" % (dest_dir, target), 'w') as f:
+                    yaml.dump(yaml_targets[target], f)
                 with open("%s/%s.f" % (dest_dir, target), 'w') as f:
                     f.writelines(v)
         elif dest_target in targets:
+            with open("%s/%s.yaml" % (dest_dir, dest_target), 'w') as f:
+                yaml.dump(yaml_targets[dest_target], f)
             with open("%s/%s.f" % (dest_dir, dest_target), 'w') as f:
                 f.writelines(targets[dest_target])
         else:
