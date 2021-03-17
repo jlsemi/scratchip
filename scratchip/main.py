@@ -21,6 +21,10 @@ if os.path.exists(os.path.join(scratchipdir, "scratchip")):
 
 from scratchip import __version__
 
+def read_lines(path):
+    with open(path,'r') as f:
+        return f.readlines()
+
 def get_resource_name(name):
     return pkg_resources.resource_filename(__name__, name)
 
@@ -167,6 +171,10 @@ class ScratChip:
                         print("Warn: %s is empty" % k)
                     res["filelist"].extend([x + "\n" for x in flat_files])
                     res["files"].extend([x + "\n" for x in flat_files])
+                elif v == 'is_filelist':
+                    flat_files = read_lines(os.path.abspath(k))
+                    res["filelist"].extend(flat_files)
+                    res["files"].extend(flat_files)
                 else:
                     if v == 'is_library_file':
                         tag = '-v '
@@ -229,7 +237,7 @@ class ScratChip:
             if "filesets" in v:
                 for other_target in v["filesets"]:
                     targets[target] = targets[other_target] + targets[target]
-                    yaml_targets[target] = yaml_targets[other_target] + yaml_targets[target]
+                    yaml_targets[target] = {**yaml_targets[other_target], **yaml_targets[target]}
 
         dest_dir = "builds/filelist"
         if not os.path.exists(dest_dir):
