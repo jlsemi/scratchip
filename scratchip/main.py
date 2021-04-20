@@ -156,6 +156,7 @@ class ScratChip:
                 return yaml.load(file)
 
     def gen_filelist_str(self, path_list):
+        inc_dir = []
         res = {
             "filelist" : [],
             "dirs"     : [],
@@ -171,19 +172,23 @@ class ScratChip:
                         print("Warn: %s is empty" % k)
                     res["filelist"].extend([x + "\n" for x in flat_files])
                     res["files"].extend([x + "\n" for x in flat_files])
-                elif v == 'is_filelist':
+                elif v == 'flat_filelist':
                     flat_files = read_lines(os.path.abspath(k))
                     res["filelist"].extend(flat_files)
                     res["files"].extend(flat_files)
+                elif v == 'is_include_dir':
+                    tag = '+incdir+'
+                    inc_dir.append("%s%s\n" % (tag, os.path.abspath(k)))
+                    res["dirs"].append("%s" % os.path.abspath(k))
                 else:
                     if v == 'is_library_file':
                         tag = '-v '
                         res["files"].append("%s" % os.path.abspath(k))
+                    elif v == 'is_filelist':
+                        tag = '-f '
+                        res["files"].append("%s" % os.path.abspath(k))
                     elif v == 'is_library_dir':
                         tag = '-y '
-                        res["dirs"].append("%s" % os.path.abspath(k))
-                    elif v == 'is_include_dir':
-                        tag = '+incdir+'
                         res["dirs"].append("%s" % os.path.abspath(k))
                     else:
                         print("Unsupport tag: %s" % v)
@@ -192,6 +197,10 @@ class ScratChip:
             else:
                 res["filelist"].append(os.path.abspath(path) + "\n")
 
+        res["filelist"] = inc_dir + res["filelist"]
+        duplicates = set([x for x in res["filelist"] if res["filelist"].count(x) > 1])
+        if duplicates:
+            print("WARN: %s" % " ".join(duplicates))
         return res
 
     def gen_filelist_define(self, defines):
