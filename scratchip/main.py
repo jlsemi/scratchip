@@ -1,5 +1,6 @@
 # See LICENSE for license details.
 
+import pathlib
 import argparse
 import os
 import sys
@@ -242,15 +243,30 @@ class ScratChip:
                         yaml_targets[target]["dirs" ] += res["dirs" ]
                         targets[target] += res["filelist"]
 
+        # Filesets Logic
         for target, v in cfg["filelist"].items():
             if "filesets" in v:
+                filesets = []
+                yaml_filesets = {}
                 for other_target in v["filesets"]:
-                    targets[target] = targets[other_target] + targets[target]
+                    filesets += targets[other_target]
                     yaml_targets[target] = {**yaml_targets[other_target], **yaml_targets[target]}
+                targets[target] = filesets + targets[target]
+
+        # Remove specified line by keyword
+        for target, v in cfg["filelist"].items():
+            if "exclude" in v:
+                result = []
+                for line in targets[target]:
+                    if v["exclude"] not in line:
+                        result += line
+                targets[target] = result
 
         dest_dir = "builds/filelist"
-        if not os.path.exists(dest_dir):
-            os.mkdir(dest_dir)
+
+        #if not os.path.exists(dest_dir):
+            #os.mkdir(dest_dir)
+        pathlib.Path(dest_dir).mkdir(parents=True, exist_ok=True)
         if dest_target == "all":
             for target, v in targets.items():
                 with open("%s/%s.yaml" % (dest_dir, target), 'w') as f:
