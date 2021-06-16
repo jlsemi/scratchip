@@ -254,12 +254,16 @@ class ScratChip:
                 targets[target] = filesets + targets[target]
 
         # Remove specified line by keyword
+        def remove_line(key_list, line):
+            for k in key_list:
+              if k in line:
+                  return []
+            return line
         for target, v in cfg["filelist"].items():
             if "exclude" in v:
                 result = []
                 for line in targets[target]:
-                    if v["exclude"] not in line:
-                        result += line
+                    result += remove_line(v["exclude"], line)
                 targets[target] = result
 
         dest_dir = "builds/filelist"
