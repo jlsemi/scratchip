@@ -16,5 +16,6 @@ class {top_name} extends Module {{
 }}
 
 object Main extends App {{
-  Driver.execute(args, () => new {top_name})
+  (new chisel3.stage.ChiselStage)
+    .emitVerilog(new {top_name}, args)
 }}

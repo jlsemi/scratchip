@@ -8,7 +8,6 @@ import pkg_resources
 import tarfile
 import shutil
 import yaml
-import chisel3_jar
 import mill_bin
 import mill_cache
 import glob
@@ -36,7 +35,7 @@ class ScratChip:
     prj_name = "None"
     prj_path = "None"
     top_name = "None"
-    scratchip_path = 'builds/scratchip'
+    scratchip_path = '.scratchip'
     cfg = None
 
     def __init__(self, prj_name, cfg):
@@ -62,7 +61,6 @@ class ScratChip:
         cache_path = os.path.join(self.prj_path, self.scratchip_path)
         mill_path = os.path.join(self.prj_path, self.scratchip_path + '/mill')
         jars_path = os.path.join(self.prj_path, self.scratchip_path + '/jars')
-        chisel3_jar_path = os.path.join(jars_path, 'chisel3.jar')
 
         if not os.path.exists(cache_path):
             self.extract_cache(mill_cache.source, cache_path)
@@ -70,8 +68,6 @@ class ScratChip:
             shutil.copyfile(mill_bin.source, mill_path)
         if not os.path.exists(jars_path):
             os.makedirs(jars_path)
-        if not os.path.exists(chisel3_jar_path):
-            shutil.copyfile(chisel3_jar.source, chisel3_jar_path)
 
         # create project's YAML template
         prj_yml_dest = os.path.join(self.prj_path, 'project.yml')

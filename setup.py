@@ -8,7 +8,6 @@ setup(
     packages=["scratchip"],
     package_data={
         "scratchip": [
-            "jars/chisel3.jar",
             "assets/default.yaml",
             "assets/project.yml",
             "assets/build.sc",
@@ -35,7 +34,6 @@ setup(
     entry_points={"console_scripts": ["scratchip = scratchip.main:main"]},
     setup_requires=["setuptools_scm",],
     install_requires=[
-        "chisel3-jar",
         "mill-bin",
         "mill-cache",
         "pyyaml",

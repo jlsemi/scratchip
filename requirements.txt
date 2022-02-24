@@ -1,4 +1,3 @@
 pyyaml
-chisel3-jar
 mill-bin
 mill-cache

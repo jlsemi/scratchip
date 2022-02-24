@@ -1,5 +1,7 @@
 name: Scratchip CI
 language: python
+python:
+  - "3.9"
 script:
   - python setup.py bdist_wheel
 before_deploy:
