@@ -36,7 +36,7 @@ class ScratChip:
     prj_name = "None"
     prj_path = "None"
     top_name = "None"
-    scratchip_path = 'builds/scratchip'
+    scratchip_path = '.scratchip'
     cfg = None
 
     def __init__(self, prj_name, cfg):
