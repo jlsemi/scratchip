@@ -1,3 +1,1 @@
-pyyaml
-mill-bin
-mill-cache
+pyyaml>=5.1
