@@ -1,4 +1,4 @@
-pyyaml
+pyyaml>=5.1
 chisel3-jar
 mill-bin
 mill-cache
