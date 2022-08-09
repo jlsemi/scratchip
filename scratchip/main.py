@@ -10,7 +10,7 @@ import shutil
 import yaml
 import mill_bin
 import mill_cache
-import glob
+from pathlib import Path
 
 # Check if this is run from a local installation
 scratchipdir = os.path.abspath(
@@ -164,7 +164,7 @@ class ScratChip:
                 k, v = list(path.items())[0]
                 tag = ''
                 if v == "flat_dir":
-                    flat_files = glob.glob(os.path.abspath(k) + "/*.*v")
+                    flat_files = [str(p) for p in Path(os.path.abspath(k)).rglob("*.*v")]
                     if not flat_files:
                         print("Warn: %s is empty" % k)
                     res["filelist"].extend([x + "\n" for x in flat_files])
