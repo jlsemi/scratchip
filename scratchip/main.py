@@ -12,6 +12,9 @@ import mill_bin
 import mill_cache
 from pathlib import Path
 
+from .dep_manager import DependenciesManager
+from scratchip import __version__
+
 # Check if this is run from a local installation
 scratchipdir = os.path.abspath(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
@@ -19,7 +22,6 @@ scratchipdir = os.path.abspath(
 if os.path.exists(os.path.join(scratchipdir, "scratchip")):
     sys.path[0:0] = [scratchipdir]
 
-from scratchip import __version__
 
 def read_lines(path):
     with open(path,'r') as f:
@@ -30,6 +32,7 @@ def get_resource_name(name):
 
 def get_resource_string(name):
     return pkg_resources.resource_string(__name__, name)
+
 
 class ScratChip:
     prj_name = "None"
@@ -351,6 +354,17 @@ def parse_args():
 
     parser_filelist.set_defaults(func=gen_filelist)
 
+    # Install Dependencies
+    parser_dep = subparsers.add_parser("install", help="""
+        Install Dependencies
+    """
+    )
+    parser_dep.add_argument(
+        'project_cfg', type=str, nargs='?',
+        default='project.yml', help='Project configure file path')
+
+    parser_dep.set_defaults(func=gen_dependencies)
+
     args = parser.parse_args()
 
     if hasattr(args, "func"):
@@ -392,6 +406,12 @@ def gen_filelist(args):
         cfg = args.project_cfg[0]
     sc = ScratChip('.', cfg)
     sc.gen_filelist(prj_cfg, target)
+
+def gen_dependencies(args):
+    prj_cfg = args.project_cfg
+
+    dm = DependenciesManager(prj_cfg)
+    dm.install()
 
 def main():
     args = parse_args()
