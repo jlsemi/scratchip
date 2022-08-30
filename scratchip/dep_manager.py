@@ -2,6 +2,7 @@ import sys
 import yaml
 import subprocess
 import os
+import pathlib
 
 from collections import namedtuple
 
@@ -40,7 +41,10 @@ class DependenciesManager:
 
     def clone(self, info):
         dest = os.path.join(info.dest, info.name)
-        print(dest)
-        p = subprocess.run(["git", "clone", info.url, dest])
-        if info.ver != "":
-            p = subprocess.run(["git", "checkout", info.ver], cwd = dest)
+
+        if pathlib.Path(dest).exists():
+            p = subprocess.run(["git", "pull", "--rebase", info.ver], cwd = dest)
+        else:
+            p = subprocess.run(["git", "clone", info.url, dest])
+            if info.ver != "":
+                p = subprocess.run(["git", "checkout", info.ver], cwd = dest)
