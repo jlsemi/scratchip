@@ -43,7 +43,7 @@ class DependenciesManager:
         dest = os.path.join(info.dest, info.name)
 
         if pathlib.Path(dest).exists():
-            p = subprocess.run(["git", "pull", "--rebase", info.ver], cwd = dest)
+            p = subprocess.run(["git", "pull", "--rebase"], cwd = dest)
         else:
             p = subprocess.run(["git", "clone", info.url, dest])
             if info.ver != "":
