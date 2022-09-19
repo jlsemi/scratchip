@@ -8,11 +8,10 @@ import pkg_resources
 import tarfile
 import shutil
 import yaml
-import mill_bin
-import mill_cache
 from pathlib import Path
 
 from .dep_manager import DependenciesManager
+from .bat_manager import BatteriesManager
 from scratchip import __version__
 
 # Check if this is run from a local installation
@@ -44,6 +43,7 @@ class ScratChip:
     def __init__(self, prj_name, cfg):
         self.prj_name = prj_name
         self.prj_path = os.path.abspath(self.prj_name)
+        self.bat_path = os.path.join(self.prj_path, self.scratchip_path)
         with open(cfg) as file:
             if sys.version_info.major == 3 and sys.version_info.minor >= 6:
                 self.cfg = yaml.load(file, Loader=yaml.FullLoader)
@@ -61,22 +61,16 @@ class ScratChip:
         # shutil.copyfile(get_resource_name("assets/default.yaml"), os.path.join(self.prj_path, "config.yaml"))
 
     def init(self):
-        cache_path = os.path.join(self.prj_path, self.scratchip_path)
-        mill_path = os.path.join(self.prj_path, self.scratchip_path + '/mill')
-        jars_path = os.path.join(self.prj_path, self.scratchip_path + '/jars')
-
-        if not os.path.exists(cache_path):
-            self.extract_cache(mill_cache.source, cache_path)
-        if not os.path.exists(mill_path):
-            shutil.copyfile(mill_bin.source, mill_path)
-        if not os.path.exists(jars_path):
-            os.makedirs(jars_path)
+        prj_yml_dest = os.path.join(self.prj_path, 'project.yml')
 
         # create project's YAML template
-        prj_yml_dest = os.path.join(self.prj_path, 'project.yml')
         if not os.path.exists(prj_yml_dest):
             prj_yml = get_resource_name("assets/project.yml")
             shutil.copyfile(prj_yml, prj_yml_dest)
+
+        bm = BatteriesManager(self.prj_path, self.read_yaml(prj_yml_dest))
+        bm.init()
+
 
     def dump_default_cfg(self, cfg, dump_name):
        shutil.copyfile(cfg, dump_name)
@@ -87,51 +81,56 @@ class ScratChip:
             if isinstance(v, dict):
                 os.mkdir(sub_dir)
                 self.create_dir(sub_dir, v)
-            elif 'chisel.mk' in v:
-                self.gen_chisel_mk(v, sub_dir)
-                self.gen_gitignore("assets/gitignore", sub_dir)
+            # elif 'chisel.mk' in v:
+            #     self.gen_chisel_mk(v, sub_dir)
+            #     self.gen_gitignore("assets/gitignore", sub_dir)
             elif 'project.mk' in v:
                 self.gen_project_mk(v, sub_dir)
-            elif 'Demo.scala' in v:
-                self.gen_demo_chisel(v, sub_dir, self.top_name)
+            # elif 'Demo.scala' in v:
+            #     self.gen_demo_chisel(v, sub_dir, self.top_name)
             elif v == '':
                 os.mkdir(sub_dir)
             else:
                 f = get_resource_name(v)
                 shutil.copyfile(f, sub_dir)
 
-    def gen_chisel_mk(self, template, dest):
-        dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
-        rel_path = os.path.relpath(self.prj_path, dest_path)
-        orig = get_resource_string(template).decode("utf-8")
-        res = orig.format(
-            mill_path = os.path.join(rel_path, self.scratchip_path + '/mill'),
-            mill_lib_path = os.path.join(rel_path, self.scratchip_path + '/jars'),
-            mill_cache_path = os.path.join(rel_path, self.scratchip_path + '/.cache'),
-            prj_dir=rel_path
-        )
-        with open(dest, 'w') as f:
-            f.write(res)
+    # def gen_chisel_mk(self, template, dest):
+    #     dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
+    #     rel_path = os.path.relpath(self.prj_path, dest_path)
+    #     orig = get_resource_string(template).decode("utf-8")
+    #     res = orig.format(
+    #         mill_path = os.path.join(rel_path, self.scratchip_path + '/mill'),
+    #         mill_lib_path = os.path.join(rel_path, self.scratchip_path + '/jars'),
+    #         mill_cache_path = os.path.join(rel_path, self.scratchip_path + '/.cache'),
+    #         prj_dir=rel_path
+    #     )
+    #     with open(dest, 'w') as f:
+    #         f.write(res)
+
 
     def gen_project_mk(self, template, dest):
         dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
         rel_path = os.path.relpath(self.prj_path, dest_path)
         orig = get_resource_string(template).decode("utf-8")
         res = orig.format(
-            prj_dir=rel_path
-        )
+            prj_dir=rel_path,
+             mill_path = os.path.join(self.scratchip_path + '/mill'),
+            mill_lib_path = os.path.join(self.scratchip_path + '/jars'),
+            mill_cache_path = os.path.join(self.scratchip_path + '/cache'),
+       )
         with open(dest, 'w') as f:
             f.write(res)
 
-    def gen_demo_chisel(self, template, dest, top_name):
-        dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
-        rel_path = os.path.relpath(self.prj_path, dest_path)
-        orig = get_resource_string(template).decode("utf-8")
-        res = orig.format(
-            top_name=top_name
-        )
-        with open(dest.replace("Demo", top_name), 'w') as f:
-            f.write(res)
+    # def gen_demo_chisel(self, template, dest, top_name):
+    #     dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
+    #     rel_path = os.path.relpath(self.prj_path, dest_path)
+    #     orig = get_resource_string(template).decode("utf-8")
+    #     res = orig.format(
+    #         top_name=top_name
+    #     )
+    #     with open(dest.replace("Demo", top_name), 'w') as f:
+    #         f.write(res)
+
 
     def gen_gitignore(self, template, dest):
         dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
@@ -365,6 +364,18 @@ def parse_args():
 
     parser_dep.set_defaults(func=gen_dependencies)
 
+    # List Available Batteries
+    parser_bat = subparsers.add_parser("list", help="""
+        List Available Batteries
+    """
+    )
+    parser_bat.add_argument(
+        'project_cfg', type=str, nargs='?',
+        default='project.yml', help='Project configure file path')
+
+    parser_bat.set_defaults(func=list_batteries)
+
+
     args = parser.parse_args()
 
     if hasattr(args, "func"):
@@ -388,6 +399,7 @@ def create(args):
 def init(args):
     prj_name = args.prj_name
     cfg = args.config
+
     if isinstance(args.config, list):
         cfg = args.config[0]
     sc = ScratChip(prj_name, cfg)
@@ -412,6 +424,13 @@ def gen_dependencies(args):
 
     dm = DependenciesManager(prj_cfg)
     dm.install()
+
+def list_batteries(args):
+    prj_cfg = args.project_cfg
+
+    bm = BatteriesManager()
+    bm.list_batteries()
+
 
 def main():
     args = parse_args()

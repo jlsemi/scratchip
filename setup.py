@@ -10,12 +10,7 @@ setup(
         "scratchip": [
             "assets/default.yaml",
             "assets/project.yml",
-            "assets/build.sc",
             "assets/project.mk",
-            "assets/chisel.mk",
-            "assets/Demo.scala",
-            "assets/mill",
-            "assets/cache.tar.gz",
             "assets/gitignore",
         ],
     },
@@ -34,9 +29,8 @@ setup(
     entry_points={"console_scripts": ["scratchip = scratchip.main:main"]},
     setup_requires=["setuptools_scm",],
     install_requires=[
-        "mill-bin",
-        "mill-cache",
-        "pyyaml",
+        "scratchip-batteries",
+        "pyyaml>=5.1",
     ],
     # Supported Python versions: 3.6+
     python_requires=">=3.6",
