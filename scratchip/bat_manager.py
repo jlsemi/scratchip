@@ -32,15 +32,7 @@ class BatteriesManager:
         tar.extractall(dest)
         tar.close()
 
-    def init(self):
-        if self.default_cfg not in self.batteries_cfg:
-            print("Battery ERROR!")
-            print("%s not available in:" % self.default_cfg)
-            self.list_batteries()
-            sys.exit(-1)
-
-        batteries = self.batteries_cfg[self.default_cfg]
-
+    def extract_files(self, batteries):
         for dir_name, files in batteries.items():
             dir_path = os.path.join(self.prj_path, dir_name)
             if not os.path.exists(dir_path):
@@ -50,3 +42,17 @@ class BatteriesManager:
                     self.extract_cache(f, dir_path)
                 else:
                     shutil.copy(f, dir_path)
+
+    def init(self, is_create):
+        if self.default_cfg not in self.batteries_cfg:
+            print("Battery ERROR!")
+            print("%s not available in:" % self.default_cfg)
+            self.list_batteries()
+            sys.exit(-1)
+
+        batteries = self.batteries_cfg[self.default_cfg]
+
+        if is_create:
+            self.extract_files(batteries["create"])
+
+        self.extract_files(batteries["init"])

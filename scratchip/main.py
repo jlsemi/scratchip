@@ -60,7 +60,7 @@ class ScratChip:
 
         # shutil.copyfile(get_resource_name("assets/default.yaml"), os.path.join(self.prj_path, "config.yaml"))
 
-    def init(self):
+    def init(self, is_create):
         prj_yml_dest = os.path.join(self.prj_path, 'project.yml')
 
         # create project's YAML template
@@ -69,8 +69,7 @@ class ScratChip:
             shutil.copyfile(prj_yml, prj_yml_dest)
 
         bm = BatteriesManager(self.prj_path, self.read_yaml(prj_yml_dest))
-        bm.init()
-
+        bm.init(is_create)
 
     def dump_default_cfg(self, cfg, dump_name):
        shutil.copyfile(cfg, dump_name)
@@ -394,7 +393,7 @@ def create(args):
         cfg = args.config[0]
     sc = ScratChip(prj_name, cfg)
     sc.create(top)
-    sc.init()
+    sc.init(True)
 
 def init(args):
     prj_name = args.prj_name
@@ -403,7 +402,7 @@ def init(args):
     if isinstance(args.config, list):
         cfg = args.config[0]
     sc = ScratChip(prj_name, cfg)
-    sc.init()
+    sc.init(False)
 
 def dump_cfg(args):
     cfg = get_resource_name("assets/default.yaml")
