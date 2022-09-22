@@ -427,7 +427,7 @@ def gen_dependencies(args):
 def list_batteries(args):
     prj_cfg = args.project_cfg
 
-    bm = BatteriesManager()
+    bm = BatteriesManager
     bm.list_batteries()
 
 

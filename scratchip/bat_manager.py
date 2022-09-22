@@ -20,8 +20,9 @@ class BatteriesManager:
 
         return cfg
 
-    def list_batteries(self):
-        for bat in self.batteries_cfg:
+    @staticmethod
+    def list_batteries():
+        for bat in scratchip_batteries.batteries:
             if bat == scratchip_batteries.default:
                 print("%s [default]" % bat)
             else:
