@@ -7,13 +7,15 @@ import shutil
 import scratchip_batteries
 
 class BatteriesManager:
-    def __init__(self, prj_path, cfg):
+    def __init__(self, prj_path, cfg, bat_name):
         self.batteries_cfg = scratchip_batteries.batteries
-        self.default_cfg = self.parse_cfg(cfg)
+        self.default_cfg = self.parse_cfg(cfg, bat_name)
         self.prj_path = prj_path
 
-    def parse_cfg(self, cfg):
-        if "battery" in cfg:
+    def parse_cfg(self, cfg, bat_name ):
+        if bat_name != "None":
+            cfg = bat_name
+        elif "battery" in cfg:
             cfg = cfg["battery"]
         else:
             cfg = scratchip_batteries.default

@@ -36,7 +36,7 @@ def get_resource_string(name):
 class ScratChip:
     prj_name = "None"
     prj_path = "None"
-    top_name = "None"
+    bat_name = "None"
     scratchip_path = '.scratchip'
     cfg = None
 
@@ -51,8 +51,7 @@ class ScratChip:
                 print(sys.version_info)
                 self.cfg = yaml.load(file)
 
-    def create(self, top):
-        self.top_name = top
+    def create(self):
         if self.prj_name != '.':
             os.mkdir(self.prj_name)
 
@@ -60,7 +59,7 @@ class ScratChip:
 
         # shutil.copyfile(get_resource_name("assets/default.yaml"), os.path.join(self.prj_path, "config.yaml"))
 
-    def init(self, is_create):
+    def init(self, bat, is_create):
         prj_yml_dest = os.path.join(self.prj_path, 'project.yml')
 
         # create project's YAML template
@@ -68,7 +67,7 @@ class ScratChip:
             prj_yml = get_resource_name("assets/project.yml")
             shutil.copyfile(prj_yml, prj_yml_dest)
 
-        bm = BatteriesManager(self.prj_path, self.read_yaml(prj_yml_dest))
+        bm = BatteriesManager(self.prj_path, self.read_yaml(prj_yml_dest), bat)
         bm.init(is_create)
 
     def dump_default_cfg(self, cfg, dump_name):
@@ -80,56 +79,11 @@ class ScratChip:
             if isinstance(v, dict):
                 os.mkdir(sub_dir)
                 self.create_dir(sub_dir, v)
-            # elif 'chisel.mk' in v:
-            #     self.gen_chisel_mk(v, sub_dir)
-            #     self.gen_gitignore("assets/gitignore", sub_dir)
-            elif 'project.mk' in v:
-                self.gen_project_mk(v, sub_dir)
-            # elif 'Demo.scala' in v:
-            #     self.gen_demo_chisel(v, sub_dir, self.top_name)
             elif v == '':
                 os.mkdir(sub_dir)
             else:
                 f = get_resource_name(v)
                 shutil.copyfile(f, sub_dir)
-
-    # def gen_chisel_mk(self, template, dest):
-    #     dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
-    #     rel_path = os.path.relpath(self.prj_path, dest_path)
-    #     orig = get_resource_string(template).decode("utf-8")
-    #     res = orig.format(
-    #         mill_path = os.path.join(rel_path, self.scratchip_path + '/mill'),
-    #         mill_lib_path = os.path.join(rel_path, self.scratchip_path + '/jars'),
-    #         mill_cache_path = os.path.join(rel_path, self.scratchip_path + '/.cache'),
-    #         prj_dir=rel_path
-    #     )
-    #     with open(dest, 'w') as f:
-    #         f.write(res)
-
-
-    def gen_project_mk(self, template, dest):
-        dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
-        rel_path = os.path.relpath(self.prj_path, dest_path)
-        orig = get_resource_string(template).decode("utf-8")
-        res = orig.format(
-            prj_dir=rel_path,
-             mill_path = os.path.join(self.scratchip_path + '/mill'),
-            mill_lib_path = os.path.join(self.scratchip_path + '/jars'),
-            mill_cache_path = os.path.join(self.scratchip_path + '/cache'),
-       )
-        with open(dest, 'w') as f:
-            f.write(res)
-
-    # def gen_demo_chisel(self, template, dest, top_name):
-    #     dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
-    #     rel_path = os.path.relpath(self.prj_path, dest_path)
-    #     orig = get_resource_string(template).decode("utf-8")
-    #     res = orig.format(
-    #         top_name=top_name
-    #     )
-    #     with open(dest.replace("Demo", top_name), 'w') as f:
-    #         f.write(res)
-
 
     def gen_gitignore(self, template, dest):
         dest_path = os.path.dirname(os.path.join(self.prj_path, dest))
@@ -314,8 +268,8 @@ def parse_args():
         'prj_name', metavar='project name', type=str, nargs='?',
         default='.', help='Create Project with name')
     parser_create.add_argument(
-        '--top', metavar='top module name', type=str, nargs='?',
-        default='Top', help='Top Module Name')
+        '--bat', metavar='batteries name', type=str, nargs='?',
+        default='None', help='Batteries Name')
     parser_create.set_defaults(func=create)
 
     # init subparser
@@ -387,13 +341,13 @@ def parse_args():
 
 def create(args):
     prj_name = args.prj_name
-    top = args.top
+    bat = args.bat
     cfg = args.config
     if isinstance(args.config, list):
         cfg = args.config[0]
     sc = ScratChip(prj_name, cfg)
-    sc.create(top)
-    sc.init(True)
+    sc.create()
+    sc.init(bat, True)
 
 def init(args):
     prj_name = args.prj_name
