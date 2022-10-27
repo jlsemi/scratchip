@@ -356,7 +356,7 @@ def init(args):
     if isinstance(args.config, list):
         cfg = args.config[0]
     sc = ScratChip(prj_name, cfg)
-    sc.init(False)
+    sc.init("None", False)
 
 def dump_cfg(args):
     cfg = get_resource_name("assets/default.yaml")
