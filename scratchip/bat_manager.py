@@ -14,11 +14,15 @@ class BatteriesManager:
 
     def parse_cfg(self, cfg, bat_name ):
         if bat_name != "None":
-            cfg = bat_name
+            cfg = [bat_name]
         elif "battery" in cfg:
             cfg = cfg["battery"]
+            if type(cfg) == list:
+                cfg = cfg
+            else:
+                cfg = [cfg]
         else:
-            cfg = scratchip_batteries.default
+            cfg = [scratchip_batteries.default]
 
         return cfg
 
@@ -47,13 +51,17 @@ class BatteriesManager:
                     shutil.copy(f, dir_path)
 
     def init(self, is_create):
-        if self.default_cfg not in self.batteries_cfg:
+        for cfg  in self.default_cfg:
+            self.init_bat(cfg, is_create)
+
+    def init_bat(self, cfg, is_create):
+        if cfg not in self.batteries_cfg:
             print("Battery ERROR!")
-            print("%s not available in:" % self.default_cfg)
+            print("%s not available in:" % cfg)
             self.list_batteries()
             sys.exit(-1)
 
-        batteries = self.batteries_cfg[self.default_cfg]
+        batteries = self.batteries_cfg[cfg]
 
         if is_create:
             self.extract_files(batteries["create"])
